@@ -1,42 +1,28 @@
 module NGRefTools
-    using Distributions
+    using ConjugatePriors, Distributions
 
-    export GenTDist,PMM_GenTDist
+    include("MarginalTDist.jl")
+    export MarginalTDist, fit, MTDist_MC_func
 
-    struct GenTDist{F<:Real} <: ContinuousUnivariateDistribution
-        t::TDist{F}
-        μ::F
-        σ::F
+"""
+    fit(NormalGamma, x)
 
-        function GenTDist{F}(ν::F,μ::F,σ::F) where {F<:Real}
-            new(TDist(ν),μ,σ)
-        end
-    end
+Return the posterior `NormalGamma` distribution on the unknown mean and variance of a Normal model of data vector `x`, assuming an uninformative (reference) prior.
 
-    dof(d::GenTDist) = d.t.ν
-    params(d::GenTDist) = (d.t.ν,d.μ,d.σ)
-    @inline partype(d::GenTDist{F}) where {F<:Real} = F
+Example:
 
-    mean(d) = d.μ; median(d) = d.μ; mode(d) = d.μ 
+    julia> fit(NormalGamma,rand(10))
+    NormalGamma{Float64}(mu=0.5052725306750604, nu=10.0, shape=4.5, rate=0.5057485400844524)
 
-    function rand(gt::GenTDist)
-        return gt.μ+rand(gt.t)*gt.σ
-    end
-
-    function quantile(gt::GenTDist, p)
-        results=Vector{Float64}()
-        q=quantile(gt.t,p)
-        q.*=gt.σ
-        return q.+=gt.μ
-    end
-
-    #posterior marginal of the mean for a normal gamma posterior from a uninformative reference prior
-    function PMM_GenTDist(x::AbstractVector)
+Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribution. 2007. https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf
+"""
+    function Distributions.fit(::Type{NormalGamma},x::AbstractVector)
         n=length(x)
         μ=mean(x)
         ssr=sum((x.-μ).^2)
-        σ=sqrt(ssr/(n(n-1)))
-        GenTDist(n-1,μ,σ)
+        α=(n-1)/2
+        β=ssr/2
+        return NormalGamma(μ,n,α,β)
     end
 
 end # module
