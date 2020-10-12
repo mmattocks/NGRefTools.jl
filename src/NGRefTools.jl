@@ -2,7 +2,7 @@ module NGRefTools
     using ConjugatePriors, Distributions
 
     include("MarginalTDist.jl")
-    export MarginalTDist, fit, MTDist_MC_func
+    export MarginalTDist, MTDist_MC_func
 
 """
     fit(NormalGamma, x)
@@ -23,6 +23,10 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
         α=(n-1)/2
         β=ssr/2
         return NormalGamma(μ,n,α,β)
+    end
+
+    function Distributions.params(d::NormalGamma)
+        return d.mu, d.nu, d.shape, d.rate
     end
 
 end # module
