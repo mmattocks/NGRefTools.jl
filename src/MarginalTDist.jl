@@ -15,34 +15,11 @@ This is the marginal distribution of the posterior mean for an uninformative (re
 
 Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribution. 2007. https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf
 """
-struct MarginalTDist{F<:Real} <: ContinuousUnivariateDistribution
-    t::TDist{F}
-    μ::F
-    σ::F
+MarginalTDist=LocationScale{Float64,TDist{Float64}}
 
-    MarginalTDist{F}(ν::F,μ::F,σ::F) where {F<:Real} = σ<=0 ? throw(DomainError("MarginalTDist σ must be >0!")) : new{F}(TDist(ν),μ,σ)
-end
+Distributions.dof(d::MarginalTDist) = d.ρ.ν
 
-MarginalTDist(ν::Integer, μ::AbstractFloat, σ::AbstractFloat)=MarginalTDist{Float64}(float(ν), μ, σ)
-MarginalTDist(ν::Real)=MarginalTDist{Float64}(float(ν),0.,1.)
-
-Distributions.dof(d::MarginalTDist) = d.t.ν
-Distributions.params(d::MarginalTDist) = (d.t.ν,d.μ,d.σ)
-@inline Distributions.partype(d::MarginalTDist{F}) where {F<:Real} = F
-
-Distributions.mean(d::MarginalTDist) = d.μ; Distributions.median(d::MarginalTDist) = d.μ; Distributions.mode(d::MarginalTDist) = d.μ
 Distributions.std(d::MarginalTDist) = d.σ
-
-function Distributions.rand(mt::MarginalTDist)
-    return mt.μ+rand(mt.t)*mt.σ
-end
-
-function Distributions.quantile(mt::MarginalTDist, p)
-    results=Vector{Float64}()
-    q=quantile(mt.t,p)
-    q.*=mt.σ
-    return q.+=mt.μ
-end
 
 """
     fit(MarginalTDist, x; PP=false)
@@ -62,7 +39,7 @@ Example:
 
 Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribution. 2007. https://www.cs.ubc.ca/~murphyk/Papers/bayesGauss.pdf
 """
-function fit(::Type{MarginalTDist}, x::AbstractVector{<:Real}; PP=false)
+function Distributions.fit(::Type{MarginalTDist}, x::AbstractVector{<:Real}; PP=false)
     PP ? PPM_MTDist(x) : PMM_MTDist(x)
 end
 
@@ -72,7 +49,7 @@ function PMM_MTDist(x)
     μ=mean(x)
     ssr=sum((x.-μ).^2)
     σ=sqrt(ssr/(n*(n-1)))
-    return MarginalTDist(n-1,μ,σ)
+    return MarginalTDist(μ,σ,TDist(n-1))
 end
 
 #Posterior predictive mean distribution
@@ -82,7 +59,7 @@ function PPM_MTDist(x)
     ssr=sum((x.-μ).^2)
     αn=(n-1)/2
     βn=.5*ssr
-    return MarginalTDist(2*αn,μ,(βn*(n+1))/(αn*n))
+    return MarginalTDist(μ,sqrt((βn*(n+1))/(αn*n)),TDist(2*αn))
 end
 
 """
@@ -97,7 +74,7 @@ Example:
 
 See also: [`fit(MarginalTDist,x)`](@ref)
 """
-function MTDist_MC_func(func::Function, xs; lower=.025, upper=.975, mc_its=1e6, summary=false)
+function MTDist_MC_func(func::Function, xs; lower=.025, upper=.975, mc_its=1e7, summary=false)
     dists=[fit(MarginalTDist,x) for x in xs]
     results=Vector{Float64}()
     for it in 1:mc_its
