@@ -22,3 +22,9 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
     function Distributions.params(d::NormalGamma)
         return d.mu, d.nu, d.shape, d.rate
     end
+
+    function marginals(d::NormalGamma)
+        m_T=MarginalTDist(d.mu,d.rate/(d.shape*d.nu),TDist(2*d.shape))
+        m_Ga=Gamma(d.shape,d.rate)
+        return m_T,m_Ga
+    end
