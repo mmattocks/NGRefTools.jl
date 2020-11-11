@@ -24,7 +24,7 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
     end
 
     function marginals(d::NormalGamma)
-        m_T=MarginalTDist(d.mu,d.rate/(d.shape*d.nu),TDist(2*d.shape))
-        m_Ga=Gamma(d.shape,d.rate)
+        m_T=MarginalTDist(d.mu,sqrt(d.rate/(d.shape*d.nu)),TDist(2*d.shape))
+        m_Ga=Gamma(d.shape,1/d.rate)
         return m_T,m_Ga
     end
