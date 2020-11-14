@@ -22,3 +22,22 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
     function Distributions.params(d::NormalInverseGamma)
         return d.mu, d.v0, d.shape, d.scale
     end
+
+    function marginals(d::NormalInverseGamma)
+        m_T=MarginalTDist(d.mu,sqrt((d.shape*inv(d.v0))/d.scale),TDist(2*d.shape))
+        m_Ga=InverseGamma(d.shape,d.scale)
+        return m_T,m_Ga
+    end
+
+    function NGplot(d::NormalInverseGamma; grid=1000, upper=.95, lower=.05)
+        marg_mean, marg_var = marginals(d)
+        xmax=quantile(marg_mean,upper)
+        xmin=quantile(marg_mean,lower)
+        ymax=quantile(marg_var,upper)
+        ymin=quantile(marg_var,lower)
+        xs=LinRange(xmin, xmax, grid)
+        ys=LinRange(ymin, ymax, grid)
+        zs=[pdf(d,x,y) for x in xs, y in ys]
+
+        return surface(xs,ys,zs)
+    end
