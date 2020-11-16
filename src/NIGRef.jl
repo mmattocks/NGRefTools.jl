@@ -29,15 +29,15 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
         return m_T,m_Ga
     end
 
-    function NGplot(d::NormalInverseGamma; grid=1000, upper=.95, lower=.05)
-        marg_mean, marg_var = marginals(d)
-        xmax=quantile(marg_mean,upper)
-        xmin=quantile(marg_mean,lower)
-        ymax=quantile(marg_var,upper)
-        ymin=quantile(marg_var,lower)
-        xs=LinRange(xmin, xmax, grid)
-        ys=LinRange(ymin, ymax, grid)
-        zs=[pdf(d,x,y) for x in xs, y in ys]
+    # function NGplot(d::NormalInverseGamma; grid=1000, upper=.95, lower=.05)
+    #     marg_mean, marg_var = marginals(d)
+    #     xmax=quantile(marg_mean,upper)
+    #     xmin=quantile(marg_mean,lower)
+    #     ymax=quantile(marg_var,upper)
+    #     ymin=quantile(marg_var,lower)
+    #     xs=LinRange(xmin, xmax, grid)
+    #     ys=LinRange(ymin, ymax, grid)
+    #     zs=[pdf(d,x,y) for x in xs, y in ys]
 
-        return surface(xs,ys,zs)
-    end
+    #     return surface(xs,ys,zs)
+    # end
