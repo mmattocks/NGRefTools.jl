@@ -83,51 +83,51 @@ function MTDist_MC_func(func::Function, xs; lower=.025, upper=.975, mc_its=1e7, 
     summary ? (return quantile(results, lower), mean(results), quantile(results,upper)) : (return results)
 end
 
-function plot_logn_MTDist(xs, colors, markers, labels, xlabel, ylabel)
-    plt=plot()
-    for (x,color) in zip(xs,colors)
-        min=floor(minimum(x)-.15*mean(x))
-        max=ceil(maximum(x)+.20*mean(x))
-        X=collect(min:max)
-        pmdist=fit(MarginalTDist, log.(x))
-        y=pdf(pmdist,log.(X))
-        plot!(plt,X,y,ribbon=(y,zeros(length(y))),label=:none,color=color,xlabel=xlabel,ylabel=ylabel)
-    end
-    for (x,color,marker,label) in zip(xs,colors, markers,labels)
-        pmdist=fit(MarginalTDist, log.(x))
-        min=floor(minimum(x)-.15*mean(x))
-        max=ceil(maximum(x)+.20*mean(x))
-        X=collect(min:max)
-        y=pdf(pmdist,log.(X))
-        scaty=[mean(y) for x in 1:length(X)]
-        plt=scatter!(plt,x,scaty,color=color, marker=marker, label=label)
-    end
+# function plot_logn_MTDist(xs, colors, markers, labels, xlabel, ylabel)
+#     plt=plot()
+#     for (x,color) in zip(xs,colors)
+#         min=floor(minimum(x)-.15*mean(x))
+#         max=ceil(maximum(x)+.20*mean(x))
+#         X=collect(min:max)
+#         pmdist=fit(MarginalTDist, log.(x))
+#         y=pdf(pmdist,log.(X))
+#         plot!(plt,X,y,ribbon=(y,zeros(length(y))),label=:none,color=color,xlabel=xlabel,ylabel=ylabel)
+#     end
+#     for (x,color,marker,label) in zip(xs,colors, markers,labels)
+#         pmdist=fit(MarginalTDist, log.(x))
+#         min=floor(minimum(x)-.15*mean(x))
+#         max=ceil(maximum(x)+.20*mean(x))
+#         X=collect(min:max)
+#         y=pdf(pmdist,log.(X))
+#         scaty=[mean(y) for x in 1:length(X)]
+#         plt=scatter!(plt,x,scaty,color=color, marker=marker, label=label)
+#     end
 
-    return plt
-end
+#     return plt
+# end
 
-function plot_n_MTDist(xs, colors, markers, labels, xlabel, ylabel)
-    plt=plot()
-    for (x,color) in zip(xs,colors)
-        min=(minimum(x)-.01*mean(x))
-        max=(maximum(x)+.01*mean(x))
-        X=collect(min:(max-min)/1000:max)
-        pmdist=fit(MarginalTDist, x)
-        y=pdf(pmdist,X)
-        plot!(plt,X,y,ribbon=(y,zeros(length(y))),color=color,label=:none,xlabel=xlabel,ylabel=ylabel)
-    end
-    for (x,color,marker,label) in zip(xs,colors, markers,labels)
-        pmdist=fit(MarginalTDist, x)
-        min=(minimum(x)-.01*mean(x))
-        max=(maximum(x)+.01*mean(x))
-        X=collect(min:max)
-        y=pdf(pmdist,X)
-        scaty=[mean(y) for x in 1:length(X)]
-        plt=scatter!(plt,x,scaty,color=color, marker=marker,label=label)
-    end
+# function plot_n_MTDist(xs, colors, markers, labels, xlabel, ylabel)
+#     plt=plot()
+#     for (x,color) in zip(xs,colors)
+#         min=(minimum(x)-.01*mean(x))
+#         max=(maximum(x)+.01*mean(x))
+#         X=collect(min:(max-min)/1000:max)
+#         pmdist=fit(MarginalTDist, x)
+#         y=pdf(pmdist,X)
+#         plot!(plt,X,y,ribbon=(y,zeros(length(y))),color=color,label=:none,xlabel=xlabel,ylabel=ylabel)
+#     end
+#     for (x,color,marker,label) in zip(xs,colors, markers,labels)
+#         pmdist=fit(MarginalTDist, x)
+#         min=(minimum(x)-.01*mean(x))
+#         max=(maximum(x)+.01*mean(x))
+#         X=collect(min:max)
+#         y=pdf(pmdist,X)
+#         scaty=[mean(y) for x in 1:length(X)]
+#         plt=scatter!(plt,x,scaty,color=color, marker=marker,label=label)
+#     end
 
-    return plt
-end
+#     return plt
+# end
 
 function mean_mass_comparator(x,y;labels=["x","y"])
     xdist=fit(MarginalTDist,x)
