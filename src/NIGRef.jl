@@ -24,7 +24,7 @@ Reference: Kevin P. Murphy, Conjugate Bayesian Analysis of the Gaussian Distribu
     end
 
     function marginals(d::NormalInverseGamma)
-        m_T=MarginalTDist(d.mu,sqrt(d.shape*d.v0/d.scale),TDist(2*d.shape))
+        m_T=MarginalTDist(d.mu,sqrt(d.scale*d.v0/d.shape),TDist(2*d.shape))
         m_Ga=InverseGamma(d.shape,d.scale)
         return m_T,m_Ga
     end
