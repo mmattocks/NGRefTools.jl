@@ -109,27 +109,45 @@ end
 function plot_n_MTDist(xs, colors, markers, labels, xlabel, ylabel; args...)
     plt=plot(;args...)
     for (x,color) in zip(xs,colors)
-        min=(minimum(x)-.01*mean(x))
-        max=(maximum(x)+.01*mean(x))
-        X=collect(min:(max-min)/1000:max)
         pmdist=fit(MarginalTDist, x)
+        min=quantile(pmdist, .01)
+        max=quantile(pmdist, .99)
+        X=collect(min:(max-min)/1000:max)
         y=pdf(pmdist,X)
         plot!(plt,X,y,ribbon=(y,zeros(length(y))),color=color,label=:none,xlabel=xlabel,ylabel=ylabel)
     end
     for (x,color,marker,label) in zip(xs,colors, markers,labels)
         pmdist=fit(MarginalTDist, x)
-        min=(minimum(x)-.01*mean(x))
-        max=(maximum(x)+.01*mean(x))
-        X=collect(min:max)
-        y=pdf(pmdist,X)
-        scaty=[mean(y) for x in 1:length(x)]
+        scaty=[pdf(pmdist,quantile(pmdist,.25)) for x in 1:length(x)]
         plt=scatter!(plt,x,scaty,color=color, marker=marker,label=label)
     end
 
     return plt
 end
 
+function plot_mt_timeseries(X, obs, colors, markers, labels; log=false, plotargs...)
+    plt=plot(;plotargs...)
+    for (ovec, color, marker, label) in zip(obs, colors, markers, labels)
+        log ? (mts=[fit(MarginalTDist,log.(ovec[t])) for t in 1:length(X)]) :
+            (mts=[fit(MarginalTDist,ovec[t]) for t in 1:length(X)])
+        if log
+            means=[exp(mean(mt)) for mt in mts]
+            lower=[exp(mean(mt))-exp(quantile(mt,.025)) for mt in mts]
+            upper=[exp(quantile(mt,.975))-exp(mean(mt)) for mt in mts]
+        else
+            means=[mean(mt) for mt in mts]
+            lower=[mean(mt)-quantile(mt,.025) for mt in mts]
+            upper=[quantile(mt,.975)-mean(mt) for mt in mts]
+        end
+
+        scatter!(plt, vcat([[X[t] for i in 1:length(ovec[t])] for t in 1:length(X)]...),vcat(ovec...), marker=marker, color=color, markersize=2, label=nothing)
+        plot!(plt, X, means, ribbon=(lower, upper), color=color, label=label)
+    end
+    return plt
+end
+
 function mean_mass_comparator(x,y;labels=["x","y"])
+
     xdist=fit(MarginalTDist,x)
     ydist=fit(MarginalTDist,y)
     if mean(xdist)>mean(ydist)
